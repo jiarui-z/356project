@@ -32,16 +32,47 @@ class Education(cmd.Cmd):
         super(Education, self).__init__()
         self.db = DB()
 
-    def do_get_all_instructors(self, arg):
+    def do_check_course_offering(self, arg):
+        return
+
+    def do_get_course_offering_by_subject(self, arg):
+        return
+
+    def do_get_course_details(self, arg):
+        'show the course\'s detail'
+
+        course_name = input('Enter the course name: ')
+        try:
+            query = '''
+            select
+                distinct C.name, I.name, CO.term_code
+            from
+                Courses As C
+                inner join CourseOfferings AS CO on C.uuid = CO.course_uuid
+                inner join Sections AS S on CO.uuid = S.course_offering_uuid
+                inner join Teachings AS T on S.uuid = T.section_uuid
+                inner join Instructors AS I on T.instructor_id = I.id
+                where C.name = '{}';
+            '''.format(course_name)
+            res = self.db.exec(query).fetchall()
+
+            df = pd.DataFrame(
+                res, columns=['course name', 'instructor name', 'term code'])
+            print(df.to_string())
+        except mysql.connector.Error as error:
+            print('Get the course\'s detail failed with error: {}'.format(error))
+            self.db.rollback()
+
+    def do_show_all_instructors(self, arg):
+        'show all instructors from UW Madison'
+
         try:
             query = 'select name from Instructors'
             res = self.db.exec(query).fetchall()
-
             df = pd.DataFrame(res, columns=['name'])
             print(df)
         except mysql.connector.Error as error:
             print('Get all instructors failed with error: {}'.format(error))
-            self.db.rollback()
 
 
 if __name__ == '__main__':
