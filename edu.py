@@ -103,6 +103,21 @@ class Education(cmd.Cmd):
             print(
                 f'Add an instructor failed with error: {error}')
 
+        # TODO: check ----- input code or name?
+    def do_add_room(self, arg):
+        'add a room'
+
+        f_code = input('Enter the facility code: ')
+        r_code = input('Enter the room code: ')
+        try:
+            query = f'''insert into Rooms values (uuid(),'{f_code}', '{r_code}');'''
+            self.db.exec(query)
+            self.db.commit()
+            print('Done!')
+        except mysql.connector.Error as error:
+            print(
+                f'Add an room failed with error: {error}')
+
     def do_find_course_location_and_time(self, arg):
         'find a course\'s location and time in this term'
 
@@ -243,7 +258,31 @@ class Education(cmd.Cmd):
             print(df)
         except mysql.connector.Error as error:
             print(
-                f'Get a section\'s grade distribution failed with error: {error}')
+                f'Get a section\'s grade distribution failed with error: {error}')\
+
+    # TODO: check----not finish
+    def do_get_section_rooms(self, arg):
+        'Get a section\'s rooms'
+
+        course_name = input('Enter the course name: ')
+        section_number = input('Enter the section number: ')
+        try:
+            query = f'''
+            select
+                R.facility_code, R.room_code
+            from
+                CourseOfferings as CO
+                inner join Sections as S on CO.uuid = S.course_offering_uuid
+                inner join Rooms as R on S.room_uuid = R.id
+                where CO.name = '{course_name}' and S.number = {section_number};
+            '''
+            res = self.db.exec(query).fetchall()
+            df = pd.DataFrame(
+                res, columns=['facility_code', 'R.room_code'])
+            print(df)
+        except mysql.connector.Error as error:
+            print(
+                f'Get a section\'s rooms failed with error: {error}')
 
     def do_q(self, args):
         'exit the program'
