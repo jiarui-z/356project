@@ -41,19 +41,64 @@ class Education(cmd.Cmd):
         super(Education, self).__init__()
         self.db = DB()
 
+    # TODO check
     def do_add_course(self, arg):
         'add a course'
 
         course = input('Enter the course name: ')
+        c_type = input('Is it a course from Coursera or Madison')
         try:
-            query = f'''insert into Courses values (uuid(), '{course}');'''
-            # TODO: course number
-            self.db.exec(query)
+            c_id = uuid.uuid4()
+            first = f'''insert into Courses values ('{c_id}', '{course}');'''
+            second = ''
+            if c_type == 'Madison':
+                num = input('Enter the course number: ')
+                second = f'''insert into MadisonCourses values ('{c_id}', {num});'''
+            elif c_type == 'Coursera':
+                institution = input('Enter the institution: ')
+                url = input('Enter the course url: ')
+                second = f'''insert into CourseraCourses values ('{course}', '{institution}', '{url}', '{c_id}');'''
+            else:
+                print('Invalid course')
+                return
+
+            self.db.exec(first)
+            self.db.exec(second)
             self.db.commit()
             print('Done!')
         except mysql.connector.Error as error:
             print(
                 f'Add a course failed with error: {error}')
+
+    def do_add_review(self, arg):
+        'add a review to Coursera course'
+
+        url = input('Enter the course url: ')
+        review = input('Enter the review: ')
+        reviewer = 'By ' + input('Enter the reviewer name: ')
+        print(reviewer)
+        date = input('Enter the date: ')
+        rating = input('Enter the rating from 1 to 5: ')
+
+        try:
+            find_cc = f'''select uuid from CourseraCourses where course_url='{url}';'''
+            cc_ids = self.db.exec(find_cc).fetchall()
+            if not cc_ids:
+                print('The url is invalid')
+                return
+
+            cc_id = cc_ids[0][0]
+            add_cr = f'''
+            insert into
+                CourseraReviews
+            values
+                ('{review}', '{reviewer}', '{date}', {rating}, '{cc_id}');
+            '''
+            self.db.exec(add_cr)
+            self.db.commit()
+            print('Done!')
+        except mysql.connector.Error as error:
+            print(f'Add review failed with error: {error}')
 
     def do_add_course_offering(self, arg):
         'add a course offering'
@@ -117,7 +162,8 @@ class Education(cmd.Cmd):
 
             co_id = co_ids[0][0]
             add_grades = f'''
-            insert into GradeDistributions
+            insert into
+                GradeDistributions
             values 
                 ('{co_id}', {section}, {grades[0]}, {grades[1]}, {grades[2]},
                 {grades[3]}, {grades[4]}, {grades[5]}, {grades[6]}, {grades[7]}
@@ -286,6 +332,27 @@ class Education(cmd.Cmd):
         except mysql.connector.Error as error:
             print(
                 f'Get a section\'s grade distribution failed with error: {error}')
+
+    def do_get_course_reviews(self, arg):
+        'get all reviews of a Coursera course'
+
+        url = input('Enter the course url: ')
+
+        try:
+            query = f'''
+            select
+                CR.reviewers, CR.date_reviews, CR.rating, CR.reviews
+            from
+                CourseraCourses as CC
+                inner join CourseraReviews as CR on CC.uuid = CR.course_uuid
+                where CC.course_url='{url}';
+            '''
+            res = self.db.exec(query).fetchall()
+            df = pd.DataFrame(
+                res, columns=['reviewers', 'date', 'rating', 'reviews'])
+            print(df)
+        except mysql.connector.Error as error:
+            print(f'Get course review failed with error: {error}')
 
     def do_q(self, args):
         'exit the program'
