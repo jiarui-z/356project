@@ -26,7 +26,15 @@ class DB:
 
 
 class Education(cmd.Cmd):
-    intro = 'Type help to show all available commands.\nType q to exit the program.\n'
+    intro = '''
+     \ \      / /__| | ___ ___  _ __ ___   ___  | |_ ___   | ____|__| |_   _
+      \ \ /\ / / _ \ |/ __/ _ \| '_ ` _ \ / _ \ | __/ _ \  |  _| / _` | | | |
+       \ V  V /  __/ | (_| (_) | | | | | |  __/ | || (_) | | |__| (_| | |_| |
+        \_/\_/ \___|_|\___\___/|_| |_| |_|\___|  \__\___/  |_____\__,_|\__,_|
+
+        Type help to show all available commands.
+        Type q to exit the program.
+    '''
     prompt = '(edu) '
 
     def __init__(self):
@@ -56,9 +64,30 @@ class Education(cmd.Cmd):
         subject = input('Enter the subject: ')
 
         try:
-            # TODO
-            query = f''''''
-            self.db.exec(query)
+            find_id = f'''select uuid from Courses where name='{course}';'''
+            c_ids = self.db.exec(find_id).fetchall()
+            if not c_ids:
+                print('The course is not available')
+            c_id = c_ids[0][0]
+
+            find_subject = f'''select code from Subjects where name='{subject}';'''
+            s_codes = self.db.exec(find_subject).fetchall()
+            if not s_codes:
+                print('The subject is not available')
+            s_code = s_codes[0][0]
+
+            # add course offering
+            co_id = uuid.uuid4()
+            add_co = f'''
+            insert into CourseOfferings values ('{co_id}', '{c_id}', {term}, '{offering}');
+            '''
+            self.db.exec(add_co).lastrowid
+
+            # add subject memberships
+            add_sm = f'''
+            insert into SubjectMemberships values ({s_code}, '{co_id}');
+            '''
+            self.db.exec(add_sm)
             self.db.commit()
             print('Done!')
         except mysql.connector.Error as error:
@@ -69,26 +98,39 @@ class Education(cmd.Cmd):
         'add a grade distribution'
 
         course_name = input('Enter the course offering name: ')
+        term = input('Enter the term code: ')
         section = input('Enter the section number: ')
+        grades = input(
+            'Enter the grade distributions(a ab b bc c d f s): ').split()
         try:
-            co_query = f'''
+            find_co = f'''
             select
                 uuid
             from
                 CourseOfferings
-                where name = '{course_name}';
+                where name='{course_name}' and term_code={term};
             '''
-            ids = self.db.exec(co_query).fetchall()
-            if not ids:
+            co_ids = self.db.exec(find_co).fetchall()
+            if not co_ids:
                 print('No course found.')
                 return
-            co_id = ids[0][0]
-            # TODO
+
+            co_id = co_ids[0][0]
+            add_grades = f'''
+            insert into GradeDistributions
+            values 
+                ('{co_id}', {section}, {grades[0]}, {grades[1]}, {grades[2]},
+                {grades[3]}, {grades[4]}, {grades[5]}, {grades[6]}, {grades[7]}
+                );
+            '''
+            print(add_grades)
+            self.db.exec(add_grades)
+            self.db.commit()
+            print('Done!')
         except mysql.connector.Error as error:
             print(f'Add a course grade failed with error: {error}')
         return
 
-    # TODO: check
     def do_add_instructor(self, arg):
         'add an instructor'
 
@@ -118,7 +160,7 @@ class Education(cmd.Cmd):
                 inner join Sections AS S on CO.uuid = S.course_offering_uuid
                 inner join Rooms as R on R.uuid = S.room_uuid
                 inner join Schedules as Sc on Sc.uuid = S.schedule_uuid
-                where CO.name = '{course_name}' and S.number = {section};
+                where CO.name='{course_name}' and S.number={section};
             '''
             raw_res = self.db.exec(query).fetchall()
             # data processing
@@ -153,7 +195,7 @@ class Education(cmd.Cmd):
             from
                 Courses As C
                 inner join CourseOfferings AS CO on C.uuid = CO.course_uuid
-                where C.name = '{course_name}' and CO.term_code = '{term}';
+                where C.name='{course_name}' and CO.term_code='{term}';
             '''
             res = self.db.exec(query).fetchall()[0][0]
             if res:
@@ -202,7 +244,7 @@ class Education(cmd.Cmd):
                 inner join Sections AS S on CO.uuid = S.course_offering_uuid
                 inner join Teachings AS T on S.uuid = T.section_uuid
                 inner join Instructors AS I on T.instructor_id = I.id
-                where C.name = '{course_name}';
+                where C.name='{course_name}';
             '''
             res = self.db.exec(query).fetchall()
 
@@ -223,11 +265,11 @@ class Education(cmd.Cmd):
         except mysql.connector.Error as error:
             print(f'Get all instructors failed with error: {error}')
 
-    # TODO: check
     def do_get_section_grade(self, arg):
         'Get a section\'s grade distribution'
 
         course_name = input('Enter the course name: ')
+        term = input('Enter the term code: ')
         try:
             query = f'''
             select
@@ -235,7 +277,7 @@ class Education(cmd.Cmd):
             from
                 CourseOfferings as CO
                 inner join GradeDistributions as G on CO.uuid = G.course_offering_uuid
-                where CO.name = '{course_name}';
+                where CO.name='{course_name}' and CO.term_code='{term}';
             '''
             res = self.db.exec(query).fetchall()
             df = pd.DataFrame(
