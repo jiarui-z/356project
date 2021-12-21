@@ -41,12 +41,11 @@ class Education(cmd.Cmd):
         super(Education, self).__init__()
         self.db = DB()
 
-    # TODO check
     def do_add_course(self, arg):
         'add a course'
 
         course = input('Enter the course name: ')
-        c_type = input('Is it a course from Coursera or Madison')
+        c_type = input('Is it a course from Coursera or Madison: ')
         try:
             c_id = uuid.uuid4()
             first = f'''insert into Courses values ('{c_id}', '{course}');'''
@@ -76,9 +75,11 @@ class Education(cmd.Cmd):
         url = input('Enter the course url: ')
         review = input('Enter the review: ')
         reviewer = 'By ' + input('Enter the reviewer name: ')
-        print(reviewer)
         date = input('Enter the date: ')
         rating = input('Enter the rating from 1 to 5: ')
+        if not (url and review and reviewer and date and rating):
+            print('Missing Input')
+            return
 
         try:
             find_cc = f'''select uuid from CourseraCourses where course_url='{url}';'''
@@ -107,6 +108,9 @@ class Education(cmd.Cmd):
         offering = input('Enter the course offering name: ')
         term = input('Enter the term code: ')
         subject = input('Enter the subject: ')
+        if not (course and offering and term and subject):
+            print('Missing Input')
+            return
 
         try:
             find_id = f'''select uuid from Courses where name='{course}';'''
@@ -147,6 +151,10 @@ class Education(cmd.Cmd):
         section = input('Enter the section number: ')
         grades = input(
             'Enter the grade distributions(a ab b bc c d f s): ').split()
+        if not (course_name and term and section and grades):
+            print('Missing Input')
+            return
+
         try:
             find_co = f'''
             select
@@ -164,7 +172,7 @@ class Education(cmd.Cmd):
             add_grades = f'''
             insert into
                 GradeDistributions
-            values 
+            values
                 ('{co_id}', {section}, {grades[0]}, {grades[1]}, {grades[2]},
                 {grades[3]}, {grades[4]}, {grades[5]}, {grades[6]}, {grades[7]}
                 );
@@ -182,6 +190,10 @@ class Education(cmd.Cmd):
 
         i_id = input('Enter the instructor id: ')
         name = input('Enter the instructor name: ')
+        if not (i_id and name):
+            print('Missing Input')
+            return
+
         try:
             query = f'''insert into Instructors values ({i_id}, '{name}');'''
             self.db.exec(query)
@@ -197,6 +209,10 @@ class Education(cmd.Cmd):
 
         f_code = input('Enter the facility code: ')
         r_code = input('Enter the room code: ')
+        if not (f_code and r_code):
+            print('Missing Input')
+            return
+
         try:
             query = f'''insert into Rooms values (uuid(),'{f_code}', '{r_code}');'''
             self.db.exec(query)
@@ -211,6 +227,10 @@ class Education(cmd.Cmd):
 
         course_name = input('Enter the course name: ')
         section = input('Enter the section number: ')
+        if not (course_name and section):
+            print('Missing Input')
+            return
+
         try:
             query = f'''
             select
@@ -249,6 +269,10 @@ class Education(cmd.Cmd):
 
         course_name = input('Enter the course name: ')
         term = input('Enter the term code: ')
+        if not (course_name and term):
+            print('Missing Input')
+            return
+
         try:
             query = f'''
             select
@@ -270,6 +294,9 @@ class Education(cmd.Cmd):
         'get all course offerings in a subject'
 
         subject = input('Enter the subject code: ')
+        if not subject:
+            print('Missing Input')
+            return
 
         try:
             query = f'''
@@ -291,10 +318,14 @@ class Education(cmd.Cmd):
                 f'Get course offerings by subject failed with error: {error}')
         return
 
-    def do_get_course_details(self, arg):
+    def get_course_instructors(self, arg):
         'show a course\'s detail'
 
         course_name = input('Enter the course name: ')
+        if not course_name:
+            print('Missing Input')
+            return
+
         try:
             query = f'''
             select
@@ -331,6 +362,10 @@ class Education(cmd.Cmd):
 
         course_name = input('Enter the course name: ')
         term = input('Enter the term code: ')
+        if not (course_name and term):
+            print('Missing Input')
+            return
+
         try:
             query = f'''
             select
@@ -348,12 +383,17 @@ class Education(cmd.Cmd):
             print(
                 f'Get a section\'s grade distribution failed with error: {error}')\
 
-    # TODO: check----not finish
+
     def do_get_section_rooms(self, arg):
+        # TODO: check----not finish
         'Get a section\'s rooms'
 
         course_name = input('Enter the course name: ')
         section_number = input('Enter the section number: ')
+        if not (course_name and section_number):
+            print('Missing Input')
+            return
+
         try:
             query = f'''
             select
@@ -376,6 +416,10 @@ class Education(cmd.Cmd):
         'get all reviews of a Coursera course'
 
         url = input('Enter the course url: ')
+        rating = input('Filter the course by rating(optional): ')
+        if not (url and rating):
+            print('Missing Input')
+            return
 
         try:
             query = f'''
@@ -384,8 +428,11 @@ class Education(cmd.Cmd):
             from
                 CourseraCourses as CC
                 inner join CourseraReviews as CR on CC.uuid = CR.course_uuid
-                where CC.course_url='{url}';
+                where CC.course_url='{url}'
             '''
+            if rating:
+                query += f' and CR.rating={rating}'
+            query += ';'
             res = self.db.exec(query).fetchall()
             df = pd.DataFrame(
                 res, columns=['reviewers', 'date', 'rating', 'reviews'])
