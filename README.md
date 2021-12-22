@@ -41,7 +41,7 @@ You can use `?` or `help` to show all available commands.
     - users can use this command to add an instructor
 
 - `add_room`
-    - users can use this command to
+    - users can use this command to add a room
 
 - `check_course_offering`
     - users can use this command to add a course offering
@@ -60,9 +60,6 @@ You can use `?` or `help` to show all available commands.
 
 - `show_all_instructors`
     - users can use this command to list all instructors
-
-- `get_section_rooms`
-    - users can use this command to 
 
 ### Coursera
 - `add_review`
