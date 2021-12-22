@@ -97,9 +97,6 @@ update CourseraReviews
     )
     set CourseraReviews.course_uuid = CourseraCourses.uuid;
 
-
-
--- TODO
 update CourseraReviews inner join CourseraCourses on (CourseraReviews.course_id = CourseraCourses.course_id) set CourseraReviews.course_uuid = CourseraCourses.uuid;
 alter table CourseraReviews add uuid char(36);
 update CourseraReviews set uuid=uuid();
