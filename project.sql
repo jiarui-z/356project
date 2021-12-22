@@ -1,15 +1,3 @@
--- TermCodes
--- create table TermCodes (
---     code int primary key,
---     year int,
---     semester int
--- );
-
--- load data infile 'termcode.csv' ignore into table TermCodes
---     fields terminated by ','
---     enclosed by '"'
---     lines terminated by '\n';
-
 -- Courses
 create table Courses (
         uuid char(36) primary key, 
@@ -24,13 +12,14 @@ load data infile '/var/lib/mysql-files/26-Education/UWM/courses.csv' ignore into
     (@col1, @col2, @col3)
     set uuid = @col1, name = @col2;
 
+create index course_name_idx on Courses(name);
+
 create table MadisonCourses (
     uuid char(36) primary key,
     number int not null check (number > 0),
     
     foreign key (uuid) references Courses(uuid)
 );
-
 
 load data infile '/var/lib/mysql-files/26-Education/UWM/courses.csv' ignore into table MadisonCourses
     fields terminated by ','
@@ -57,7 +46,11 @@ load data infile '/var/lib/mysql-files/26-Education/UWM/course_offerings.csv' ig
     lines terminated by '\n'
     ignore 1 lines;
 
--- TODO---CourseraCourses
+create index course_offerings_name_idx on CourseOfferings(name);
+create index course_offerings_cu_idx on CourseOfferings(course_uuid);
+create index course_offerings_tc_idx on CourseOfferings(term_code);
+
+--CourseraCourses
 create table CourseraCourses(
     name varchar(150) not null,
     institution varchar(70) not null,
@@ -74,9 +67,10 @@ load data infile '/var/lib/mysql-files/26-Education/Coursera/Coursera_courses.cs
 
 update CourseraCourses set uuid=uuid();
 
+create index coursera_courses_url_idx on CourseraCourses(course_url);
+
 -- CourseraReviews
 create table CourseraReviews(
-    -- id int primary key AUTO_INCREMENT,
     reviews varchar(1000),
     reviewers varchar(100),
     date_reviews char(12),
@@ -91,13 +85,10 @@ load data infile '/var/lib/mysql-files/26-Education/Coursera/Coursera_reviews.cs
     lines terminated by '\n'
     ignore 1 lines;
 
-update CourseraReviews 
-    inner join CourseraCourses on (
-        CourseraReviews.course_id = CourseraCourses.course_id
-    )
-    set CourseraReviews.course_uuid = CourseraCourses.uuid;
+update CourseraReviews inner join CourseraCourses 
+on (CourseraReviews.course_id = CourseraCourses.course_id) 
+set CourseraReviews.course_uuid = CourseraCourses.uuid;
 
-update CourseraReviews inner join CourseraCourses on (CourseraReviews.course_id = CourseraCourses.course_id) set CourseraReviews.course_uuid = CourseraCourses.uuid;
 alter table CourseraReviews add uuid char(36);
 update CourseraReviews set uuid=uuid();
 alter table CourseraReviews add primary key (uuid);
@@ -105,13 +96,13 @@ alter table CourseraReviews add primary key (uuid);
 alter table CourseraReviews drop course_id;
 alter table CourseraCourses drop course_id;
 alter table CourseraCourses add primary key (uuid);
-alter table CourseraReviews add foreign key (course_uuid) REFERENCES CourseraCourses(uuid);
+alter table CourseraReviews add foreign key (course_uuid) references CourseraCourses(uuid);
 
-insert into Courses (uuid, name)
-    select uuid, name from CourseraCourses;
+insert into Courses (uuid, name) （select uuid, name from CourseraCourses）;
 
-ALTER TABLE CourseraCourses
-  DROP COLUMN name;
+alter table CourseraCourses drop column name;
+
+create index coursera_review_cu_idx on CourseraReviews(course_uuid);
 
 -- Instructors
 create table Instructors (
@@ -125,6 +116,7 @@ load data infile '/var/lib/mysql-files/26-Education/UWM/instructors.csv' ignore 
     lines terminated by '\n'
     ignore 1 lines;
 
+create index instructors_idx on Instructors(name);
 
 -- Rooms
 create table Rooms (
@@ -188,6 +180,8 @@ load data infile '/var/lib/mysql-files/26-Education/UWM/subject_memberships.csv'
     lines terminated by '\n'
     ignore 1 lines;
 
+create index subject_memberships_cou_idx on SubjectMemberships(course_offering_uuid);
+
 -- Sections
 create table Sections(
         uuid char(36) primary key,
@@ -208,6 +202,9 @@ load data infile '/var/lib/mysql-files/26-Education/UWM/sections.csv' ignore int
     lines terminated by '\n'
     ignore 1 lines;
 
+create index sections_comp_idx on Sections(course_offering_uuid, room_uuid, schedule_uuid);
+create index sections_num_idx on Sections(number);
+
 -- Teachings
 create table Teachings (
         instructor_id int not null check(instructor_id > 0),
@@ -223,6 +220,8 @@ load data infile '/var/lib/mysql-files/26-Education/UWM/teachings.csv' ignore in
     enclosed by '"'
     lines terminated by '\n'
     ignore 1 lines;
+
+create index teachings_su_idx on Teachings(section_uuid);
 
 -- GradeDistributions
 create table GradeDistributions (
@@ -245,11 +244,3 @@ load data infile '/var/lib/mysql-files/26-Education/UWM/grade_distributions.csv'
     enclosed by '"'
     lines terminated by '\n'
     ignore 1 lines;
-
--- alter table GradeDistributions add column section_uuid char(36);
-    
--- UPDATE GradeDistributions INNER JOIN Sections 
---     ON (GradeDistributions.course_offering_uuid = Sections.course_offering_uuid and GradeDistributions.section_number = Sections.number)
--- SET GradeDistributions.section_uuid = Sections.uuid;
-
--- alter table GradeDistributions drop column course_offering_uuid, drop column section_number, add primary key (section_uuid);
