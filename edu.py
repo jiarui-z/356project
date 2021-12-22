@@ -63,7 +63,7 @@ class Education(cmd.Cmd):
 
             self.db.exec(first)
             self.db.exec(second)
-            self.db.commit()
+            # self.db.commit()
             print('Done!')
         except mysql.connector.Error as error:
             print(
@@ -96,7 +96,7 @@ class Education(cmd.Cmd):
                 ('{review}', '{reviewer}', '{date}', {rating}, '{cc_id}');
             '''
             self.db.exec(add_cr)
-            self.db.commit()
+            # self.db.commit()
             print('Done!')
         except mysql.connector.Error as error:
             print(f'Add review failed with error: {error}')
@@ -386,7 +386,7 @@ class Education(cmd.Cmd):
 
         url = input('Enter the course url: ')
         rating = input('Filter the course by rating(optional): ')
-        if not (url and rating):
+        if not url:
             print('Missing Input')
             return
 
