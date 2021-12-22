@@ -14,7 +14,9 @@ This project uses MySQL and the data from Kaggle to explore the course related i
 
 ## Installation
 Run the following command to install all the dependencies.
-```pip3 install pandas mysql-connector-python```
+```
+pip3 install pandas mysql-connector-python
+```
 
 ## Getting Started
 After installing all the dependencies, we can now start our education application.

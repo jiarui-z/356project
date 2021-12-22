@@ -177,7 +177,6 @@ class Education(cmd.Cmd):
                 {grades[3]}, {grades[4]}, {grades[5]}, {grades[6]}, {grades[7]}
                 );
             '''
-            print(add_grades)
             self.db.exec(add_grades)
             self.db.commit()
             print('Done!')
@@ -219,8 +218,7 @@ class Education(cmd.Cmd):
             self.db.commit()
             print('Done!')
         except mysql.connector.Error as error:
-            print(
-                f'Add an room failed with error: {error}')
+            print(f'Add a room failed with error: {error}')
 
     def do_find_course_location_and_time(self, arg):
         'find a course\'s location and time in this term'
