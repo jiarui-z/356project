@@ -113,6 +113,9 @@ alter table CourseraReviews add foreign key (course_uuid) REFERENCES CourseraCou
 insert into Courses (uuid, name)
     select uuid, name from CourseraCourses;
 
+ALTER TABLE CourseraCourses
+  DROP COLUMN name;
+
 -- Instructors
 create table Instructors (
         id int primary key,
