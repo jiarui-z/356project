@@ -97,9 +97,6 @@ update CourseraReviews
     )
     set CourseraReviews.course_uuid = CourseraCourses.uuid;
 
-
-
--- TODO
 update CourseraReviews inner join CourseraCourses on (CourseraReviews.course_id = CourseraCourses.course_id) set CourseraReviews.course_uuid = CourseraCourses.uuid;
 alter table CourseraReviews add uuid char(36);
 update CourseraReviews set uuid=uuid();
@@ -112,6 +109,9 @@ alter table CourseraReviews add foreign key (course_uuid) REFERENCES CourseraCou
 
 insert into Courses (uuid, name)
     select uuid, name from CourseraCourses;
+
+ALTER TABLE CourseraCourses
+  DROP COLUMN name;
 
 -- Instructors
 create table Instructors (
