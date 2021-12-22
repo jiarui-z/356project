@@ -4,6 +4,18 @@ import pandas as pd
 import uuid
 
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
 class DB:
     def __init__(self):
         self.connection = mysql.connector.connect(
@@ -26,16 +38,16 @@ class DB:
 
 
 class Education(cmd.Cmd):
-    intro = '''
+    intro = f'''{bcolors.HEADER}
      \ \      / /__| | ___ ___  _ __ ___   ___  | |_ ___   | ____|__| |_   _
       \ \ /\ / / _ \ |/ __/ _ \| '_ ` _ \ / _ \ | __/ _ \  |  _| / _` | | | |
        \ V  V /  __/ | (_| (_) | | | | | |  __/ | || (_) | | |__| (_| | |_| |
         \_/\_/ \___|_|\___\___/|_| |_| |_|\___|  \__\___/  |_____\__,_|\__,_|
 
-        Type help to show all available commands.
-        Type q to exit the program.
+        {bcolors.OKGREEN}Type help to show all available commands.
+        {bcolors.WARNING}Type q to exit the program.{bcolors.ENDC}
     '''
-    prompt = '(edu) '
+    prompt = f'{bcolors.OKBLUE}(edu){bcolors.ENDC} '
 
     def __init__(self):
         super(Education, self).__init__()
@@ -63,7 +75,7 @@ class Education(cmd.Cmd):
 
             self.db.exec(first)
             self.db.exec(second)
-            # self.db.commit()
+            self.db.commit()
             print('Done!')
         except mysql.connector.Error as error:
             print(
@@ -96,7 +108,7 @@ class Education(cmd.Cmd):
                 ('{review}', '{reviewer}', '{date}', {rating}, '{cc_id}');
             '''
             self.db.exec(add_cr)
-            # self.db.commit()
+            self.db.commit()
             print('Done!')
         except mysql.connector.Error as error:
             print(f'Add review failed with error: {error}')
