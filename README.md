@@ -70,4 +70,4 @@ You can use `?` or `help` to show all available commands.
     - users can filter the reviews by rating
 
 ## Error Handling
-All commands catch MySQL error and miising input error. In the case when multiple SQL queries are used to update the database, the operations will not be committed if there is an error in any of the queries to ensure atomicity.
+All commands catch MySQL error and missing  input error. In the case when multiple SQL queries are used to update the database, the operations will not be committed if there is an error in any of the queries to ensure atomicity.

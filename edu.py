@@ -316,7 +316,7 @@ class Education(cmd.Cmd):
                 f'Get course offerings by subject failed with error: {error}')
         return
 
-    def get_course_instructors(self, arg):
+    def do_get_course_instructors(self, arg):
         'show a course\'s detail'
 
         course_name = input('Enter the course name: ')
@@ -379,36 +379,7 @@ class Education(cmd.Cmd):
             print(df)
         except mysql.connector.Error as error:
             print(
-                f'Get a section\'s grade distribution failed with error: {error}')\
-
-
-    def do_get_section_rooms(self, arg):
-        # TODO: check----not finish
-        'Get a section\'s rooms'
-
-        course_name = input('Enter the course name: ')
-        section_number = input('Enter the section number: ')
-        if not (course_name and section_number):
-            print('Missing Input')
-            return
-
-        try:
-            query = f'''
-            select
-                R.facility_code, R.room_code
-            from
-                CourseOfferings as CO
-                inner join Sections as S on CO.uuid = S.course_offering_uuid
-                inner join Rooms as R on S.room_uuid = R.id
-                where CO.name = '{course_name}' and S.number = {section_number};
-            '''
-            res = self.db.exec(query).fetchall()
-            df = pd.DataFrame(
-                res, columns=['facility_code', 'R.room_code'])
-            print(df)
-        except mysql.connector.Error as error:
-            print(
-                f'Get a section\'s rooms failed with error: {error}')
+                f'Get a section\'s grade distribution failed with error: {error}')
 
     def do_get_course_reviews(self, arg):
         'get all reviews of a Coursera course'
