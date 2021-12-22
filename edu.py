@@ -68,7 +68,7 @@ class Education(cmd.Cmd):
             elif c_type == 'Coursera':
                 institution = input('Enter the institution: ')
                 url = input('Enter the course url: ')
-                second = f'''insert into CourseraCourses values ('{course}', '{institution}', '{url}', '{c_id}');'''
+                second = f'''insert into CourseraCourses values ('{institution}', '{url}', '{c_id}');'''
             else:
                 print('Invalid course')
                 return
@@ -129,12 +129,15 @@ class Education(cmd.Cmd):
             c_ids = self.db.exec(find_id).fetchall()
             if not c_ids:
                 print('The course is not available')
+                return
             c_id = c_ids[0][0]
 
             find_subject = f'''select code from Subjects where name='{subject}';'''
             s_codes = self.db.exec(find_subject).fetchall()
             if not s_codes:
                 print('The subject is not available')
+                return
+
             s_code = s_codes[0][0]
 
             # add course offering
