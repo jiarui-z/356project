@@ -37,7 +37,6 @@ create table CourseOfferings (
         name varchar(30) not null,
 
         foreign key (course_uuid) references Courses(uuid)
-        -- foreign key term_code references TermCodes(code),
 );
 
 load data infile '/var/lib/mysql-files/26-Education/UWM/course_offerings.csv' ignore into table CourseOfferings
@@ -86,8 +85,8 @@ load data infile '/var/lib/mysql-files/26-Education/Coursera/Coursera_reviews.cs
     ignore 1 lines;
 
 update CourseraReviews inner join CourseraCourses 
-on (CourseraReviews.course_id = CourseraCourses.course_id) 
-set CourseraReviews.course_uuid = CourseraCourses.uuid;
+    on (CourseraReviews.course_id = CourseraCourses.course_id) 
+    set CourseraReviews.course_uuid = CourseraCourses.uuid;
 
 alter table CourseraReviews add uuid char(36);
 update CourseraReviews set uuid=uuid();
@@ -97,8 +96,9 @@ alter table CourseraReviews drop course_id;
 alter table CourseraCourses drop course_id;
 alter table CourseraCourses add primary key (uuid);
 alter table CourseraReviews add foreign key (course_uuid) references CourseraCourses(uuid);
+alter table CourseraCourses add foreign key (uuid) references Courses(uuid);
 
-insert into Courses (uuid, name) （select uuid, name from CourseraCourses）;
+insert into Courses (uuid, name)（select uuid, name from CourseraCourses;
 
 alter table CourseraCourses drop column name;
 
@@ -236,7 +236,9 @@ create table GradeDistributions (
         f int not null check (f >= 0),
         s int not null check (s >= 0),
 
-        primary key(course_offering_uuid, section_number)
+        primary key (course_offering_uuid, section_number),
+        foreign key (course_offering_uuid) references CourseOfferings(uuid),
+        foreign key (section_number) references Sections(number)
 );
 
 load data infile '/var/lib/mysql-files/26-Education/UWM/grade_distributions.csv' ignore into table GradeDistributions
