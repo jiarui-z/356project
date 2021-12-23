@@ -5,6 +5,7 @@ This project uses MySQL and the data from Kaggle to explore the course related i
 **ER_Diagram.pdf** contains our ER diagram for our database tables.
 **project.sql** contains the SQL commands to set up the database.
 **edu.py** contains our CLI application.
+**mining.py** contains our data mining script.
 
 ## Prerequisites
 - `Python3`
@@ -18,12 +19,19 @@ Run the following command to install all the dependencies.
 pip3 install pandas mysql-connector-python
 ```
 
+To set up for the data mining script, please download the data from [here](https://www.kaggle.com/Madgrades/uw-madison-courses), save it to the `data` folder.
+
 ## Getting Started
 After installing all the dependencies, we can now start our education application.
 ```python
 python3 edu.py
 ```
 This will connect to our own database on the marmoset (Please connect to the campus's VPN).
+
+Run the following command for data mining analysis.
+```
+python3 mining.py
+```
 
 ## Usage
 You can use `?` or `help` to show all available commands.
